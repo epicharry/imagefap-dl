@@ -23,6 +23,10 @@ try {
         $options['maxRetries'] = intval($_GET['maxRetries']);
     }
 
+    if (isset($_GET['singlePage']) && $_GET['singlePage'] === 'true') {
+        $options['singlePage'] = true;
+    }
+
     $scraper = new ImageFapScraper($options);
 
     $result = $scraper->scrapeTarget($url);

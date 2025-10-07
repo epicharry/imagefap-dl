@@ -6,6 +6,7 @@ class ImageFapScraper {
     private $cookie = null;
     private $minTimePage = 2000;
     private $maxRetries = 3;
+    private $singlePage = false;
 
     public function __construct($options = []) {
         if (isset($options['minTimePage'])) {
@@ -13,6 +14,9 @@ class ImageFapScraper {
         }
         if (isset($options['maxRetries'])) {
             $this->maxRetries = $options['maxRetries'];
+        }
+        if (isset($options['singlePage'])) {
+            $this->singlePage = $options['singlePage'];
         }
         $this->initCookie();
     }
@@ -329,11 +333,13 @@ class ImageFapScraper {
 
         $galleryLinks = $parsed['galleryLinks'];
 
-        while ($parsed['nextUrl']) {
-            usleep($this->minTimePage * 1000);
-            $result = $this->fetchPage($parsed['nextUrl']);
-            $parsed = $this->parseGalleryLinks($result['html'], $result['url']);
-            $galleryLinks = array_merge($galleryLinks, $parsed['galleryLinks']);
+        if (!$this->singlePage) {
+            while ($parsed['nextUrl']) {
+                usleep($this->minTimePage * 1000);
+                $result = $this->fetchPage($parsed['nextUrl']);
+                $parsed = $this->parseGalleryLinks($result['html'], $result['url']);
+                $galleryLinks = array_merge($galleryLinks, $parsed['galleryLinks']);
+            }
         }
 
         return [
@@ -351,12 +357,14 @@ class ImageFapScraper {
 
         $imageLinks = $parsed['imageLinks'];
 
-        while ($parsed['nextUrl']) {
-            usleep($this->minTimePage * 1000);
-            $result = $this->fetchPage($parsed['nextUrl']);
-            $nextParsed = $this->parseGalleryPage($result['html'], $result['url']);
-            $imageLinks = array_merge($imageLinks, $nextParsed['imageLinks']);
-            $parsed['nextUrl'] = $nextParsed['nextUrl'];
+        if (!$this->singlePage) {
+            while ($parsed['nextUrl']) {
+                usleep($this->minTimePage * 1000);
+                $result = $this->fetchPage($parsed['nextUrl']);
+                $nextParsed = $this->parseGalleryPage($result['html'], $result['url']);
+                $imageLinks = array_merge($imageLinks, $nextParsed['imageLinks']);
+                $parsed['nextUrl'] = $nextParsed['nextUrl'];
+            }
         }
 
         $images = [];
