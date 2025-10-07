@@ -205,13 +205,15 @@ class ImageFapScraper {
         $description = $descNode ? $this->htmlToText($dom->saveHTML($descNode)) : null;
 
         $imageLinks = $this->parseImageLinks($html, $baseUrl);
+        $cdnImages = $this->parseImageNav($html);
 
         return [
             'id' => $galleryId,
             'title' => $title,
             'description' => $description,
             'imageLinks' => $imageLinks['imageLinks'],
-            'nextUrl' => $imageLinks['nextUrl']
+            'nextUrl' => $imageLinks['nextUrl'],
+            'cdnImages' => $cdnImages
         ];
     }
 
@@ -384,7 +386,19 @@ class ImageFapScraper {
         $images = [];
 
         if ($this->skipImageDetails) {
-            $images = $imageLinks;
+            if (isset($parsed['cdnImages']) && count($parsed['cdnImages']) > 0) {
+                $images = $parsed['cdnImages'];
+                foreach ($images as &$image) {
+                    foreach ($imageLinks as $link) {
+                        if ($link['id'] === $image['id'] && isset($link['title'])) {
+                            $image['title'] = $link['title'];
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $images = $imageLinks;
+            }
         } else if (count($imageLinks) > 0) {
             $galleryId = $parsed['id'];
             $referrerImageId = $imageLinks[0]['id'];
