@@ -12,7 +12,7 @@ try {
     }
 
     $options = [
-        'minTimePage' => 3000
+        'minTimePage' => 5000
     ];
 
     if (isset($_GET['minTimePage'])) {
@@ -25,6 +25,10 @@ try {
 
     if (isset($_GET['singlePage']) && $_GET['singlePage'] === 'true') {
         $options['singlePage'] = true;
+    }
+
+    if (isset($_GET['skipImageDetails']) && $_GET['skipImageDetails'] === 'true') {
+        $options['skipImageDetails'] = true;
     }
 
     $scraper = new ImageFapScraper($options);

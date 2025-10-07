@@ -7,6 +7,7 @@ class ImageFapScraper {
     private $minTimePage = 2000;
     private $maxRetries = 3;
     private $singlePage = false;
+    private $skipImageDetails = false;
 
     public function __construct($options = []) {
         if (isset($options['minTimePage'])) {
@@ -17,6 +18,9 @@ class ImageFapScraper {
         }
         if (isset($options['singlePage'])) {
             $this->singlePage = $options['singlePage'];
+        }
+        if (isset($options['skipImageDetails'])) {
+            $this->skipImageDetails = $options['skipImageDetails'];
         }
         $this->initCookie();
     }
@@ -368,7 +372,10 @@ class ImageFapScraper {
         }
 
         $images = [];
-        if (count($imageLinks) > 0) {
+
+        if ($this->skipImageDetails) {
+            $images = $imageLinks;
+        } else if (count($imageLinks) > 0) {
             $galleryId = $parsed['id'];
             $referrerImageId = $imageLinks[0]['id'];
             $navIdx = 0;
@@ -402,11 +409,13 @@ class ImageFapScraper {
             }
         }
 
-        foreach ($images as &$image) {
-            foreach ($imageLinks as $link) {
-                if ($link['id'] === $image['id'] && $link['title']) {
-                    $image['title'] = $link['title'];
-                    break;
+        if (!$this->skipImageDetails) {
+            foreach ($images as &$image) {
+                foreach ($imageLinks as $link) {
+                    if ($link['id'] === $image['id'] && $link['title']) {
+                        $image['title'] = $link['title'];
+                        break;
+                    }
                 }
             }
         }
