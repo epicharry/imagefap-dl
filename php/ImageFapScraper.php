@@ -244,10 +244,19 @@ class ImageFapScraper {
                         }
 
                         $title = null;
+                        $src = null;
                         if ($nextRow) {
                             $fonts = $xpath->query('.//font', $nextRow);
                             if ($fonts->length > 1) {
                                 $title = $this->htmlToText($fonts->item(1)->nodeValue);
+                            }
+                        }
+
+                        $imgNodes = $xpath->query('.//img', $linkNode);
+                        if ($imgNodes->length > 0) {
+                            $imgSrc = $imgNodes->item(0)->getAttribute('src');
+                            if ($imgSrc && strpos($imgSrc, 'cdn') !== false) {
+                                $src = $imgSrc;
                             }
                         }
 
@@ -256,7 +265,8 @@ class ImageFapScraper {
                         $links[] = [
                             'id' => intval($imageId),
                             'url' => $fullUrl,
-                            'title' => $title
+                            'title' => $title,
+                            'src' => $src
                         ];
                     }
                 }
