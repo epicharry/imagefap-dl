@@ -11,7 +11,9 @@ try {
         throw new Exception('URL parameter is required');
     }
 
-    $options = [];
+    $options = [
+        'minTimePage' => 3000
+    ];
 
     if (isset($_GET['minTimePage'])) {
         $options['minTimePage'] = intval($_GET['minTimePage']);
