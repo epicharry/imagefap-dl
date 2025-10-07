@@ -256,7 +256,7 @@ class ImageFapScraper {
                         if ($imgNodes->length > 0) {
                             $imgSrc = $imgNodes->item(0)->getAttribute('src');
                             if ($imgSrc && strpos($imgSrc, 'cdn') !== false) {
-                                $src = $imgSrc;
+                                $src = str_replace('/images/thumb/', '/images/full/', $imgSrc);
                             }
                         }
 
