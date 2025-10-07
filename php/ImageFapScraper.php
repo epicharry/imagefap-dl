@@ -34,7 +34,7 @@ class ImageFapScraper {
         curl_close($ch);
     }
 
-    private function fetchPage($url, $retries = 0) {
+    private function fetchPage($url, $retries = 0, $headers = []) {
         usleep($this->minTimePage * 1000);
 
         $ch = curl_init($url);
@@ -44,6 +44,14 @@ class ImageFapScraper {
 
         if ($this->cookie) {
             curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
+        }
+
+        if (!empty($headers)) {
+            $headerArray = [];
+            foreach ($headers as $key => $value) {
+                $headerArray[] = "$key: $value";
+            }
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headerArray);
         }
 
         $html = curl_exec($ch);
@@ -359,9 +367,15 @@ class ImageFapScraper {
 
             while ($navIdx < count($imageLinks)) {
                 $imageNavUrl = $this->constructImageNavURL($referrerImageId, $galleryId, $navIdx);
+                $refererUrl = $this->constructImageNavRefererURL($referrerImageId, $galleryId);
+
+                $headers = [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Referer' => $refererUrl
+                ];
 
                 usleep($this->minTimePage * 1000);
-                $result = $this->fetchPage($imageNavUrl);
+                $result = $this->fetchPage($imageNavUrl, 0, $headers);
                 $navImages = $this->parseImageNav($result['html']);
 
                 $images = array_merge($images, $navImages);
@@ -398,7 +412,11 @@ class ImageFapScraper {
     }
 
     private function constructImageNavURL($referrerImageId, $galleryId, $startIndex) {
-        return "{$this->baseUrl}/ajax_photo_panel.php?imgid={$referrerImageId}&gid={$galleryId}&idx={$startIndex}&partial=all";
+        return "{$this->baseUrl}/photo/{$referrerImageId}/?gid={$galleryId}&idx={$startIndex}&partial=true";
+    }
+
+    private function constructImageNavRefererURL($referrerImageId, $galleryId) {
+        return "{$this->baseUrl}/photo/{$referrerImageId}/?pgid=&gid={$galleryId}&page=0";
     }
 
     public function getUserGalleries($url) {
